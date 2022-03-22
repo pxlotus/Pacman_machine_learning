@@ -7,8 +7,7 @@ class Node(object):
     def __init__(self, x, y):
         # self.position = Vector2(x,y)
         self.position = Vector2(x, y)
-        # self.neighbors = {UP:None, DOWN:None, LEFT:None, RIGHT:None}
-        self.neighbors = {UP: None, DOWN: None, LEFT: None, RIGHT: None, PORTAL:None}
+        self.neighbors = {UP:None, DOWN:None, LEFT:None, RIGHT:None, PORTAL:None}
 
     def render(self, screen):
         for n in self.neighbors.keys():
@@ -28,15 +27,16 @@ class NodeGroup(object):
         self.createNodeTable(data)
         self.connectHorizontally(data)
         self.connectVertically(data)
+        self.homekey = None
     # self.nodeList = []
     # the setupTestNodes method has been deleted.
+
+    def readMazeFile(self, textfile):
+        return np.loadtxt(textfile, dtype='<U1')
 
     def render(self, screen):
         for node in self.nodesLUT.values():
             node.render(screen)
-
-    def readMazeFile(self, textfile):
-        return np.loadtxt(textfile, dtype='<U1')
 
     def createNodeTable(self, data, xoffset=0, yoffset=0):
         for row in list(range(data.shape[0])):
@@ -103,6 +103,22 @@ class NodeGroup(object):
             self.nodesLUT[key1].neighbors[PORTAL] = self.nodesLUT[key2]
             self.nodesLUT[key2].neighbors[PORTAL] = self.nodesLUT[key1]
 
+    def createHomeNodes(self, xoffset, yoffset):
+        homedata = np.array([['X','X','+','X','X'],
+                             ['X','X','.','X','X'],
+                             ['+','X','.','X','+'],
+                             ['+','.','+','.','+'],
+                             ['+','X','X','X','+']])
+        self.createNodeTable(homedata, xoffset, yoffset)
+        self.connectHorizontally(homedata, xoffset, yoffset)
+        self.connectVertically(homedata, xoffset, yoffset)
+        self.homekey = self.constructKey(xoffset+2, yoffset)
+        return self.homekey
+
+    def connectHomeModes(self, homekey, otherkey, direction):
+        key = self.constructKey(*otherkey)
+        self.nodesLUT[homekey].neighbors[direction] = self.nodesLUT[key]
+        self.nodesLUT[key].neighbors[direction*-1] = self.nodesLUT[homekey]
 
 
 """
