@@ -33,10 +33,10 @@ class ModeController(object):
 
     def update(self, dt):
         self.mainmode.update(dt)
-        # self.current = self.mainmode.mode
         if self.current is FREIGHT:
             self.timer += dt
             if self.timer >= self.time:
+                self.time = None
                 self.entity.normalMode()
                 self.current = self.mainmode.mode
         elif self.current in [SCATTER, CHASE]:

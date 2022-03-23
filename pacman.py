@@ -12,6 +12,9 @@ class Pacman(Entity):
         # self.position = Vector2(200, 400) " this commented out becoz we want to make pacman follow the nodes,
         # not stay stationary"
         self.color = YELLOW
+        self.direction = LEFT
+        self.setBetweenNodes(LEFT)
+        self.alive = True
 
         #  dt represents the time taken as u calculate the new position
     def update(self, dt):
@@ -65,6 +68,17 @@ class Pacman(Entity):
         if dSquared <= rSquared:
             return True
         return False
+
+    def reset(self):
+        Entity.reset(self)
+        self.direction = LEFT
+        self.setBetweenNodes(LEFT)
+        self.alive = True
+
+    def die(self):
+        self.alive = False
+        self.direction = STOP
+
 
 """
 Deleted and removed many of the methods that now Entity has. 
