@@ -19,7 +19,13 @@ class Ghost(Entity):
         self.blinky = blinky
         self.homeNode = node
 
+    def reset(self):
+        Entity.reset(self)
+        self.points = 200
+        self.directionMethod = self.goalDirection
+
     def update(self, dt):
+        self.sprites.update(dt)
         self.mode.update(dt)
         if self.mode.current is SCATTER:
             self.scatter()
@@ -33,17 +39,6 @@ class Ghost(Entity):
     def chase(self):
         self.goal = self.pacman.position
 
-    def startFreight(self):
-        self.mode.setFreightMode()
-        if self.mode.current == FREIGHT:
-            self.setSpeed(50)
-            self.directionMethod = self.randomDirection
-
-    def normalMode(self):
-        self.setSpeed(100)
-        self.directionMethod = self.goalDirection
-        self.homeNode.denyAccess(DOWN, self)
-
     def spawn(self):
         self.goal = self.spawnNode.position
 
@@ -56,6 +51,17 @@ class Ghost(Entity):
             self.setSpeed(150)
             self.directionMethod = self.goalDirection
             self.spawn()
+
+    def startFreight(self):
+        self.mode.setFreightMode()
+        if self.mode.current == FREIGHT:
+            self.setSpeed(50)
+            self.directionMethod = self.randomDirection
+
+    def normalMode(self):
+        self.setSpeed(100)
+        self.directionMethod = self.goalDirection
+        self.homeNode.denyAccess(DOWN, self)
 
 # the ghost classes
 class Blinky(Ghost):
@@ -115,7 +121,7 @@ class GhostGroup(object):
     def __init__(self, node, pacman):
         self.blinky = Blinky(node, pacman)
         self.pinky = Pinky(node, pacman)
-        self.inky = Inky(node, pacman)
+        self.inky = Inky(node, pacman, self.blinky)
         self.clyde = Clyde(node, pacman)
         self.ghosts = [self.blinky, self.pinky, self.inky, self.clyde]
 
@@ -143,14 +149,6 @@ class GhostGroup(object):
         for ghost in self:
             ghost.points = 200
 
-    def reset(self):
-        Entity.reset(self)
-        self.points = 200
-        self.directionMethod = self.goalDirection
-        """
-        for ghost in self:
-            ghost.reset()
-        """
     def hide(self):
         for ghost in self:
             ghost.visible = False
@@ -158,6 +156,10 @@ class GhostGroup(object):
     def show(self):
         for ghost in self:
             ghost.visible = True
+
+    def reset(self):
+        for ghost in self:
+            ghost.reset()
 
     def render(self, screen):
         for ghost in self:

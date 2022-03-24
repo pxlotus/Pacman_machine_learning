@@ -70,69 +70,25 @@ class GameController(object):
         self.textgroup.update(dt)
         self.pellets.update(dt)
         if not self.pause.paused:
-            self.pacman.update(dt)
+            """we take out pacman bcoz we want to see the animation of his death"""
+            # self.pacman.update(dt)
             self.ghosts.update(dt)
             if self.fruit is not None:
                 self.fruit.update(dt)
             self.checkPelletEvents()
             self.checkGhostEvents()
             self.checkFruitEvents()
+        if self.pacman.alive:
+            if not self.pause.paused:
+                self.pacman.update(dt)
+        else:
+            self.pacman.update(dt)
         afterPauseMethod = self.pause.update(dt)
         if afterPauseMethod is not None:
             afterPauseMethod()
         self.checkEvents()
         self.render()
 
-    def checkGhostEvents(self):
-        for ghost in self.ghosts:
-            if self.pacman.collideGhost(ghost):
-                if ghost.mode.current is FREIGHT:
-                    self.pacman.visible = False
-                    ghost.visible = False
-                    self.updateScore(ghost.points)
-                    self.textgroup.addText(str(ghost.points), WHITE, ghost.position.x, ghost.position.y, 8, time=1)
-                    self.ghosts.updatePoints()
-                    self.pause.setPause(pauseTime=1, func=self.showEntities)
-                    ghost.startSpawn()
-                    self.nodes.allowHomeAccess(ghost)
-                elif ghost.mode.current is not SPAWN:
-                    if self.pacman.alive:
-                        self.lives -= 1
-                        self.lifesprites.removeImage()
-                        self.pacman.die()
-                        self.ghosts.hide()
-                        if self.lives <= 0:
-                            self.textgroup.showText(GAMEOVERTXT)
-                            self.pause.setPause(pauseTime=3, func=self.restartGame)
-                        else:
-                            self.pause.setPause(pauseTime=3, func=self.resetLevel)
-        """
-        if self.pacman.collideGhost(self.ghost):
-            if self.ghost.mode.current is FREIGHT:
-                self.ghost.startSpawn()"""
-
-    def showEntities(self):
-        self.pacman.visible = True
-        self.ghosts.show()
-
-    def hideEntities(self):
-        self.pacman.visible = False
-        self.ghosts.hide()
-
-    def checkFruitEvents(self):
-        if self.pellets.numEaten == 50 or self.pellets.numEaten == 140:
-            if self.fruit is None:
-                self.fruit = Fruit(self.nodes.getNodeFromTiles(9, 20))
-        if self.fruit is not None:
-            if self.pacman.collideCheck(self.fruit):
-                self.updateScore(self.fruit.points)
-                self.textgroup.addText(str(self.fruit.points), WHITE, self.fruit.position.x, self.fruit.position.y, 8,
-                                       time=1)
-                self.fruit = None
-            elif self.fruit.destroy:
-                self.fruit = None
-
-    # close the window
     def checkEvents(self):
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -163,6 +119,55 @@ class GameController(object):
             if self.pellets.isEmpty():
                 self.hideEntities()
                 self.pause.setPause(pauseTime=3, func=self.nextLevel)
+
+    def checkGhostEvents(self):
+        for ghost in self.ghosts:
+            if self.pacman.collideGhost(ghost):
+                if ghost.mode.current is FREIGHT:
+                    self.pacman.visible = False
+                    ghost.visible = False
+                    self.updateScore(ghost.points)
+                    self.textgroup.addText(str(ghost.points), WHITE, ghost.position.x, ghost.position.y, 8, time=1)
+                    self.ghosts.updatePoints()
+                    self.pause.setPause(pauseTime=1, func=self.showEntities)
+                    ghost.startSpawn()
+                    self.nodes.allowHomeAccess(ghost)
+                elif ghost.mode.current is not SPAWN:
+                    if self.pacman.alive:
+                        self.lives -= 1
+                        self.lifesprites.removeImage()
+                        self.pacman.die()
+                        self.ghosts.hide()
+                        if self.lives <= 0:
+                            self.textgroup.showText(GAMEOVERTXT)
+                            self.pause.setPause(pauseTime=3, func=self.restartGame)
+                        else:
+                            self.pause.setPause(pauseTime=3, func=self.resetLevel)
+        """
+        if self.pacman.collideGhost(self.ghost):
+            if self.ghost.mode.current is FREIGHT:
+                self.ghost.startSpawn()"""
+
+    def checkFruitEvents(self):
+        if self.pellets.numEaten == 50 or self.pellets.numEaten == 140:
+            if self.fruit is None:
+                self.fruit = Fruit(self.nodes.getNodeFromTiles(9, 20))
+        if self.fruit is not None:
+            if self.pacman.collideCheck(self.fruit):
+                self.updateScore(self.fruit.points)
+                self.textgroup.addText(str(self.fruit.points), WHITE, self.fruit.position.x, self.fruit.position.y, 8,
+                                       time=1)
+                self.fruit = None
+            elif self.fruit.destroy:
+                self.fruit = None
+
+    def showEntities(self):
+        self.pacman.visible = True
+        self.ghosts.show()
+
+    def hideEntities(self):
+        self.pacman.visible = False
+        self.ghosts.hide()
 
     def nextLevel(self):
         self.showEntities()

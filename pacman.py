@@ -18,8 +18,20 @@ class Pacman(Entity):
         self.alive = True
         self.sprites = PacmanSprites(self)
 
-        #  dt represents the time taken as u calculate the new position
+    def reset(self):
+        Entity.reset(self)
+        self.direction = LEFT
+        self.setBetweenNodes(LEFT)
+        self.alive = True
+        self.image = self.sprites.getStartImage()
+        self.sprites.reset()
+
+    def die(self):
+        self.alive = False
+        self.direction = STOP
+
     def update(self, dt):
+        self.sprites.update(dt)
         self.position += self.directions[self.direction]*self.speed*dt
         direction = self.getValidKey()
         """ 
@@ -71,18 +83,9 @@ class Pacman(Entity):
             return True
         return False
 
-    def reset(self):
-        Entity.reset(self)
-        self.direction = LEFT
-        self.setBetweenNodes(LEFT)
-        self.alive = True
-
-    def die(self):
-        self.alive = False
-        self.direction = STOP
-
 
 """
 Deleted and removed many of the methods that now Entity has. 
-or it will be a repeat of what is alrdy there
+or it will be a repeat of what is already there
+#  dt represents the time taken as u calculate the new position
 """

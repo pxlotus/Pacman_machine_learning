@@ -15,24 +15,34 @@ class Entity(object):
         self.radius = 10
         self.collideRadius = 5
         self.color = WHITE
-        # self.node = node
-        # self.setPosition()
-        # self.target = node
         self.visible = True
         self.disablePortal = False
         self.goal = None
         self.directionMethod = self.randomDirection
         self.setStartNode(node)
         self.image = None
-
-    def setStartNode(self, node):
-        self.node = node
-        self.startNode = node
-        self.target = node
-        self.setPosition()
+        # self.alive = True
 
     def setPosition(self):
         self.position = self.node.position.copy()
+
+    def update(self, dt):
+        self.position += self.directions[self.direction] * self.speed * dt
+
+        if self.overshotTarget():
+            self.node = self.target
+            directions = self.validDirections()
+            direction = self.directionMethod(directions)
+            if not self.disablePortal:
+                if self.node.neighbors[PORTAL] is not None:
+                    self.node = self.node.neighbors[PORTAL]
+            self.target = self.getNewTarget(direction)
+            if self.target is not self.node:
+                self.direction = direction
+            else:
+                self.target = self.getNewTarget(self.direction)
+
+            self.setPosition()
 
     def validDirection(self, direction):
         if direction is not STOP:
@@ -67,39 +77,6 @@ class Entity(object):
                 return True
         return False
 
-    def setSpeed(self, speed):
-        self.speed = speed * TILEWIDTH / 16
-
-    def render(self, screen):
-        if self.visible:
-            if self.image is not None:
-                adjust = Vector2(TILEWIDTH, TILEHEIGHT) / 2
-                p = self.position - adjust
-                screen.blit(self.image, p.asTuple())
-                # screen.blit(self.image, self.position.asTuple())
-            else:
-                p = self.position.asInt()
-                pygame.draw.circle(screen, self.color, p, self.radius)
-
-    def update(self, dt):
-        self.position += self.directions[self.direction] * self.speed * dt
-
-        if self.overshotTarget():
-            self.node = self.target
-            directions = self.validDirections()
-            # direction = self.randomDirection(directions)
-            direction = self.directionMethod(directions)
-            if not self.disablePortal:
-                if self.node.neighbors[PORTAL] is not None:
-                    self.node = self.node.neighbors[PORTAL]
-            self.target = self.getNewTarget(direction)
-            if self.target is not self.node:
-                self.direction = direction
-            else:
-                self.target = self.getNewTarget(self.direction)
-
-            self.setPosition()
-
     def validDirections(self):
         directions = []
         for key in [UP, DOWN, LEFT, RIGHT]:
@@ -121,13 +98,33 @@ class Entity(object):
         index = distances.index(min(distances))
         return directions[index]
 
+    def setStartNode(self, node):
+        self.node = node
+        self.startNode = node
+        self.target = node
+        self.setPosition()
+
     def setBetweenNodes(self, direction):
         if self.node.neighbors[direction] is not None:
             self.target = self.node.neighbors[direction]
             self.position = (self.node.position + self.target.position) / 2.0
+
+    def setSpeed(self, speed):
+        self.speed = speed * TILEWIDTH / 16
 
     def reset(self):
         self.setStartNode(self.startNode)
         self.direction = STOP
         self.speed = 100
         self.visible = True
+
+    def render(self, screen):
+        if self.visible:
+            if self.image is not None:
+                adjust = Vector2(TILEWIDTH, TILEHEIGHT) / 2
+                p = self.position - adjust
+                screen.blit(self.image, p.asTuple())
+                # screen.blit(self.image, self.position.asTuple())
+            else:
+                p = self.position.asInt()
+                pygame.draw.circle(screen, self.color, p, self.radius)

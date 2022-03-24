@@ -45,10 +45,6 @@ class NodeGroup(object):
     def readMazeFile(self, textfile):
         return np.loadtxt(textfile, dtype='<U1')
 
-    def render(self, screen):
-        for node in self.nodesLUT.values():
-            node.render(screen)
-
     def createNodeTable(self, data, xoffset=0, yoffset=0):
         for row in list(range(data.shape[0])):
             for col in list(range(data.shape[1])):
@@ -162,6 +158,10 @@ class NodeGroup(object):
     def allowHomeAccessList(self, entities):
         for entity in entities:
             self.allowHomeAccess(entity)
+
+    def render(self, screen):
+        for node in self.nodesLUT.values():
+            node.render(screen)
 
 
 """
